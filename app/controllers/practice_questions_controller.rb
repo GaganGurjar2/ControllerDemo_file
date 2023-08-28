@@ -7,7 +7,8 @@ class PracticeQuestionsController < ApplicationController
   
   def create
       @practice_question= PracticeQuestion.new(practice_question_params)
-      if @practice_question.save
+      if @practice_question
+        @practice_question.save
          render json: @practice_question, status: :created
        else
           render jsn: { error:"there is a some problem for create chapter " }
@@ -16,29 +17,31 @@ class PracticeQuestionsController < ApplicationController
           
   def update
       @practice_question = PracticeQuestion.find(params[:id])
-      if @practice_question.update(practice_question_params)
+      if @practice_question 
+        @practice_question.update(practice_question_params)
           render json: @practice_question
       else
-          render json: { error:"there is a some problem for updating " }
+          render json: { error:"Quetion not found" }
       end 
    end
   
   def destroy
-      @practice_question = PracticeQuestion.find(params[:id])
-     if @practice_question.present?
-        @practice_question.destroy
-        head :no_content
-     else
-        render json: { error: "Chapter not found." }
-     end
-   end
+    @practice_question = PracticeQuestion.find(params[:id])
+    if @practice_question
+      @practice_question.present?
+      @practice_question.destroy
+      head :no_content
+    else
+      render json: { error: "Quetion not found." }
+    end
+  end
   
   def show
       @practice_question= PracticeQuestion.find(params[:id])
-      if @practice_question?
+      if @practice_question
         render json: @practice_question
       else
-        render json: { error: "Chapter not found." }
+        render json: { error: "Quetion  not found." }
      end
    end   
   

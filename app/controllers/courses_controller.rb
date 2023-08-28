@@ -9,7 +9,8 @@ class CoursesController < ApplicationController
 	def create
 		if teacher? 
 		  @course = Course.new(course_params)
-		  if @course.save
+		  if @course 
+        @course.save
 			  render json: @course, status: :created
 		  else
 			  render json: { errors: "" }
@@ -21,7 +22,8 @@ class CoursesController < ApplicationController
 	
   def update
 		if teacher? 
-		  if @course.update(course_params)
+		  if @course
+        @course.update(course_params)
 			  render json: @course
 		  else
 		    render json: { errors: @course.errors.full_messages }, status: :unprocessable_entity
@@ -34,7 +36,7 @@ class CoursesController < ApplicationController
   def destroy
 		if teacher?
 		  @course = Course.find(params[:id])
-		  if @course.present?
+		  if @course
 			  @course.destroy
 			  head :no_content
 		  else
@@ -48,7 +50,7 @@ class CoursesController < ApplicationController
 	def show
 		if params[:user_type] == 'teacher' && params[:user_id]
 			user = User.find_by(id: params[:user_id].to_i, user_type: 'teacher')
-			if user.present? 
+			if user
 			  @courses = user.courses
 			  render json: @courses
 			else

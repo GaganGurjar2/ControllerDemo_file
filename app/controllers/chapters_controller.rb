@@ -6,7 +6,8 @@ class ChaptersController < ApplicationController
 
   def create
     @chapter = Chapter.new(chapter_params)
-    if @chapter.save
+    if @chapter 
+      @chapter.save
       render json: @chapter, status: :created
     else
       render json: { error:"there is a some problem for create chapter " }
@@ -15,7 +16,8 @@ class ChaptersController < ApplicationController
         
   def update
     @chapter = Chapter.find(params[:id])
-    if @chapter.update(chapter_params)
+    if @chapter
+      @chapter.update(chapter_params)
       render json: @chapter
     else
       render json: { error:"there is a some problem for updating " }
@@ -24,7 +26,7 @@ class ChaptersController < ApplicationController
 
   def destroy
 		@chapter = Chapter.find(params[:id])
-		if @chapter.present?
+		if @chapter
 			@chapter.destroy
 			head :no_content
 		else
@@ -34,7 +36,7 @@ class ChaptersController < ApplicationController
 
   def show
     @chapter= Chapter.find(params[:id])
-    if @chapter.present?
+    if @chapter
 			render json: @chapter
     else
       render json: { error: "Chapter not found." }
