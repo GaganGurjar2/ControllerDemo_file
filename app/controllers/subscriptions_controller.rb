@@ -1,39 +1,53 @@
 class SubscriptionsController < ApplicationController
-	def index
-	  @subscriptions = Subscription.all
-	  render json: @subscriptions
-	end
+  before_action :find_user_and_course, only: [:index, :create]
+  before_action :find_subscription, only: [:show]
+
+  def index
+    render json: @course.subscriptions
+  end
 
   def create
-    if student? 
-      @subscription = Subscription.new(subscription_params)
-     if @subscription.save
+    if student?
+      @subscription = @course.subscriptions.new(subscription_params)
+      if @subscription.save
         render json: @subscription, status: :created
       else
-        render json: { errors: "you can't subscribed this course" }
+        render json: { errors: "Unable to create a subscription for this course" }, status: :unprocessable_entity
       end
     else
-      render_teacher_error
-   end
+      render_student_error
+    end
   end
 
   def show
-      @subscription= Subscription.find(params[:id])
-			render json: @subscription
-   end 
-  
-  private
+    render json: @subscription
+  end
 
+  private
   def subscription_params
-      params.require(:subscription).permit(:user_id, :course_id)  
-    end
+         params.require(:subscription).permit(:user_id, :course_id)  
+   end
 
   def student?
-      user = User.find_by(id:subscription_params[:user_id])
-      user.present? && user.user_type == 'student'
-   end
-  
-  def render_teacher_error
-      render json: { error: "Only student Type Userperform this action." }
-   end  
+    @user.user_type == 'student'
+  end
+
+  def render_student_error
+    render json: { error: "Only student_type users can perform this action." }, status: :forbidden
+  end
+
+  def find_user_and_course
+    @user = User.find_by(id: params[:user_id])
+    @course = Course.find_by(id: params[:course_id], user_id: @user&.id)
+    unless @user && @course
+      render json: { error: "User or course not found." }, status: :not_found
+    end
+  end
+
+  def find_subscription
+    @subscription = Subscription.find_by(id: params[:id])
+    unless @subscription
+      render json: { error: "Subscription not found." }, status: :not_found
+    end
+  end
 end 

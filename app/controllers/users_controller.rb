@@ -1,5 +1,4 @@
 class UsersController < ApplicationController
-
 	def index
 		@users =User.all
 		render json:@users
@@ -15,7 +14,7 @@ class UsersController < ApplicationController
 		if @user.save
 			render json: @user, status: :created
     else
-      ender json: {errors: @user.errors.full_messages}, status: :unprocessable_entity          		
+      ender json: {errors: @user.errors.full_messages}          		
 	  end
   end
 
@@ -24,7 +23,7 @@ class UsersController < ApplicationController
 		if @user.update(user_params)
 			render json: @user
 		else
-			render json: {errors: @user.errors.full_messages},status: :unprocessable_entity          
+			render json: {errors: @user.errors.full_messages}         
     end
   end 
    

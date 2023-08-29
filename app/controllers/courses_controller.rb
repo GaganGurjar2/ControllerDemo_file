@@ -2,9 +2,24 @@ class CoursesController < ApplicationController
 	before_action :set_course, only: [:show, :update, :destroy]
   
   def index
-	  @courses = Course.all
-	  render json: @courses
-  end
+	#   @courses = Course.all
+	#   render json: @courses
+		user = User.find_by(id: params[:user_id].to_i)
+		if user
+		  if user.user_type == 'teacher'
+			@courses = user.courses
+			render json: @courses
+		  elsif user.user_type == 'student'
+			@courses = Course.all
+			render json: @courses
+		  else
+			render json: { error: "You are not authorized to view courses for this user." }, status: :forbidden
+		  end
+		else
+		  render json: { error: "User not found." }, status: :not_found
+		end
+	  end
+  
 
 	def create
 		if teacher? 
@@ -13,7 +28,7 @@ class CoursesController < ApplicationController
         @course.save
 			  render json: @course, status: :created
 		  else
-			  render json: { errors: "" }
+			  render json: { errors: @course.errors.full_messages }
 		  end
 	  else
 		  render_teacher_error
@@ -40,29 +55,51 @@ class CoursesController < ApplicationController
 			  @course.destroy
 			  head :no_content
 		  else
-			  render json: { error: "Course not found." }, status: :unprocessable_entity
+			  render json: { error: @course.errors.full_messages}, status: :unprocessable_entity
 		  end
 	  else
 		  render_teacher_error
     end
   end
-	   
-	def show
-		if params[:user_type] == 'teacher' && params[:user_id]
-			user = User.find_by(id: params[:user_id].to_i, user_type: 'teacher')
-			if user
-			  @courses = user.courses
-			  render json: @courses
-			else
-			  render json: { error: "You are not authorized to view these courses." }, status: :forbidden
-			end
-		elsif params[:user_type] == 'student'
-			@courses = Course.all
-			render json: @courses
-	  else
-			render json: { error: "Invalid request parameters." }, status: :unprocessable_entity
+  def show
+	if params[:user_id] && (params[:user_type] == 'teacher' || params[:user_type] == 'student')
+	  user = User.find_by(id: params[:user_id].to_i)
+	  
+	  if user
+		if params[:user_type] == 'teacher' && user.user_type == 'teacher'
+		  @courses = user.courses
+		  render json: @courses
+		elsif params[:user_type] == 'student' && user.user_type == 'student'
+		  @courses = Course.all
+		  render json: @courses
+		else
+		  render json: { error: "You are not authorized to view these courses." }, status: :forbidden
 		end
+	  else
+		render json: { error: "User not found." }, status: :not_found
+	  end
+	else
+	  render json: { error: "Invalid request parameters." }, status: :unprocessable_entity
 	end
+  end
+  
+	   
+	# def show
+	# 	if params[:user_type] == 'teacher' && params[:user_id]
+	# 		user = User.find_by(id: params[:user_id].to_i, user_type: 'teacher')
+	# 		if user
+	# 		  @courses = user.courses
+	# 		  render json: @courses
+	# 		else
+	# 		  render json: { error: "You are not authorized to view these courses." }, status: :forbidden
+	# 		end
+	# 	elsif params[:user_type] == 'student'
+	# 		@courses = Course.all
+	# 		render json: @courses
+	#   else
+	# 		render json: { error: "Invalid request parameters." }, status: :unprocessable_entity
+	# 	end
+	# end
 
 	private
 	def teacher?
